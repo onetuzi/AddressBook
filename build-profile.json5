@@ -1,0 +1,37 @@
+{
+  "app": {
+    "signingConfigs": [],
+
+    "products": [
+      {
+        "compileSdkVersion": 11,
+        "compatibleSdkVersion": 9,
+        "name": "default",
+        "signingConfig": "default",
+        "runtimeOS": "OpenHarmony"
+      }
+    ],
+    "buildModeSet": [
+      {
+        "name": "debug",
+      },
+      {
+        "name": "release"
+      }
+    ]
+  },
+  "modules": [
+    {
+      "name": "entry",
+      "srcPath": "./entry",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    }
+  ]
+}
