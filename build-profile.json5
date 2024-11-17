@@ -4,11 +4,10 @@
 
     "products": [
       {
-        "compileSdkVersion": 11,
-        "compatibleSdkVersion": 9,
+        "compatibleSdkVersion": "4.0.0(10)",
         "name": "default",
         "signingConfig": "default",
-        "runtimeOS": "OpenHarmony"
+        "runtimeOS": "HarmonyOS"
       }
     ],
     "buildModeSet": [

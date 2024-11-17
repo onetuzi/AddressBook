@@ -1,6 +1,7 @@
 import rs from '@ohos.data.relationalStore'
 import { BusinessError, Callback } from '@kit.BasicServicesKit'
 import { ValuesBucket } from '@kit.ArkData'
+import { ListMember } from '../DataModel/DataInfo'
 
 export default class rdb{
   rdbStore?: rs.RdbStore
@@ -88,10 +89,10 @@ export default class rdb{
     }
   }
 
-  RequestData() {
+  RequestData(): Array<ListMember> {
     // 配置谓词
     let predicates: rs.RdbPredicates = new rs.RdbPredicates("AddressTable");
-    let jsonData:Array<ValuesBucket> = new Array<ValuesBucket>();
+    let jsonData: Array<ListMember> = new Array<ListMember>();
 
     if(this.rdbStore){
       this.rdbStore.query(predicates, ["id", 'name', 'mobile', 'img'], (err, resultSet) => {
@@ -109,21 +110,17 @@ export default class rdb{
           const name = resultSet.getString(resultSet.getColumnIndex("name"));
           const mobile = resultSet.getString(resultSet.getColumnIndex("mobile"));
           const img = resultSet.getString(resultSet.getColumnIndex("img"));
-          console.info(`id=${id}, name=${name}, age=${mobile}, img=${img}`);
+          console.info(`id=${id}, name=${name}, mobile=${mobile}, img=${img}`);
 
-          const valueBucket: ValuesBucket = {
-            'id':id,
-            'name': name,
-            'mobile': mobile,
-            'img': img
-          };
-          jsonData.push(valueBucket)
+          const value: ListMember = new ListMember(id, name, mobile, img);
+          jsonData.push(value)
         }
         // 释放数据集的内存
         resultSet.close();
         // console.info("JSON: " + JSON.stringify(jsonData))
       })
     }
+    return jsonData
   }
 
 }
