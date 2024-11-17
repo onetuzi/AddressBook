@@ -88,7 +88,7 @@ export default class rdb{
     }
   }
 
-  RequestData(callback: Callback<string>) {
+  RequestData() {
     // 配置谓词
     let predicates: rs.RdbPredicates = new rs.RdbPredicates("AddressTable");
     let jsonData:Array<ValuesBucket> = new Array<ValuesBucket>();
@@ -103,7 +103,7 @@ export default class rdb{
         if(resultSet.rowCount == -1){
           console.info("rowCount = -1")
         }
-        // resultSet是一个数据集合的游标，默认指向第-1个记录，有效的数据从0开始。
+
         while (resultSet.goToNextRow()) {
           const id = resultSet.getLong(resultSet.getColumnIndex("ID"));
           const name = resultSet.getString(resultSet.getColumnIndex("name"));
@@ -122,7 +122,6 @@ export default class rdb{
         // 释放数据集的内存
         resultSet.close();
         // console.info("JSON: " + JSON.stringify(jsonData))
-        callback(JSON.stringify(jsonData))
       })
     }
   }
