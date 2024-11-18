@@ -3,6 +3,8 @@ import hilog from '@ohos.hilog';
 import UIAbility from '@ohos.app.ability.UIAbility';
 import Want from '@ohos.app.ability.Want';
 import window from '@ohos.window';
+import rs from '@ohos.data.relationalStore'
+export let rdbStore: rs.RdbStore | undefined = undefined;
 
 export default class EntryAbility extends UIAbility {
   onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
@@ -16,6 +18,34 @@ export default class EntryAbility extends UIAbility {
   onWindowStageCreate(windowStage: window.WindowStage): void {
     // Main window is created, set main page for this ability
     hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onWindowStageCreate');
+
+    // 新建数据库
+    const DbConfig: rs.StoreConfig = {
+      name: "AddressBookDB",
+      securityLevel: rs.SecurityLevel.S1
+    }
+
+    rs.getRdbStore(this.context, DbConfig, (err, rdbStore_ret: rs.RdbStore) => {
+      if (err) {
+        console.error(`Get RdbStore failed, code is ${err.code},message is ${err.message}`);
+        return;
+      }
+      rdbStore = rdbStore_ret;
+
+      // 新建数据表
+      const SQL_CREATE_TABLE = 'CREATE TABLE IF NOT EXISTS AddressTable (' +
+        'id INTEGER PRIMARY KEY AUTOINCREMENT,' +
+        'name TEXT,' +
+        'mobile TEXT,' +
+        'img TEXT)';
+
+      rdbStore.executeSql(SQL_CREATE_TABLE);
+      console.info(`CreateTable successfully.`);
+
+    })
+
+
+
 
     windowStage.loadContent('pages/Index', (err, data) => {
       if (err.code) {

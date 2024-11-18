@@ -97,4 +97,8 @@ export class ListMemberDataSource extends BasicDataSource {
     this.dataArray = data
     this.notifyDataReload()
   }
+
+  public SetArr(data: Array<ListMember>){
+    this.dataArray = data
+  }
 }

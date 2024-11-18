@@ -2,27 +2,19 @@ import rs from '@ohos.data.relationalStore'
 import { BusinessError, Callback } from '@kit.BasicServicesKit'
 import { ValuesBucket } from '@kit.ArkData'
 import { ListMember } from '../DataModel/DataInfo'
+import { rdbStore } from '../entryability/EntryAbility';
 
 export default class rdb{
   rdbStore?: rs.RdbStore
   context?: Context = getContext()
 
   constructor() {
-    const DbConfig: rs.StoreConfig = {
-      name: "AddressBookDB",
-      securityLevel: rs.SecurityLevel.S1
-    }
-
-    rs.getRdbStore(this.context, DbConfig, (err: BusinessError, rdbStore: rs.RdbStore) => {
-      this.rdbStore = rdbStore;
-      if (err) {
-        console.error(`Get RdbStore failed, code is ${err.code},message is ${err.message}`);
-        return;
-      }
-      console.info(`Get RdbStore successfully.`);
-    })
+    this.rdbStore = this.rdbStore
   }
 
+  init(){
+    this.rdbStore = this.rdbStore
+  }
   CreateTable(){
     const SQL_CREATE_TABLE = 'CREATE TABLE IF NOT EXISTS AddressTable (' +
       'id INTEGER PRIMARY KEY AUTOINCREMENT,' +
@@ -34,6 +26,7 @@ export default class rdb{
       this.rdbStore.executeSql(SQL_CREATE_TABLE);
       console.info(`CreateTable successfully.`);
     }
+
   }
 
   InsertData(name: string, mobile: string, img: string) {
@@ -92,7 +85,7 @@ export default class rdb{
   RequestData(): Array<ListMember> {
     // 配置谓词
     let predicates: rs.RdbPredicates = new rs.RdbPredicates("AddressTable");
-    let jsonData: Array<ListMember> = new Array<ListMember>();
+    let retData: Array<ListMember> = new Array<ListMember>();
 
     if(this.rdbStore){
       this.rdbStore.query(predicates, ["id", 'name', 'mobile', 'img'], (err, resultSet) => {
@@ -100,27 +93,28 @@ export default class rdb{
           console.error(`Failed to query data. Code:${err.code}, message:${err.message}`);
           return;
         }
-        console.info(`ResultSet column names: ${resultSet.columnNames}, row count: ${resultSet.rowCount}`);
+        console.info(`ResultSet column names: ${resultSet.columnNames}, row count: ${resultSet.rowCount}`)
         if(resultSet.rowCount == -1){
           console.info("rowCount = -1")
         }
 
         while (resultSet.goToNextRow()) {
-          const id = resultSet.getLong(resultSet.getColumnIndex("ID"));
-          const name = resultSet.getString(resultSet.getColumnIndex("name"));
-          const mobile = resultSet.getString(resultSet.getColumnIndex("mobile"));
+          const id = resultSet.getLong(resultSet.getColumnIndex("ID"))
+          const name = resultSet.getString(resultSet.getColumnIndex("name"))
+          const mobile = resultSet.getString(resultSet.getColumnIndex("mobile"))
           const img = resultSet.getString(resultSet.getColumnIndex("img"));
-          console.info(`id=${id}, name=${name}, mobile=${mobile}, img=${img}`);
+          console.info(`id=${id}, name=${name}, mobile=${mobile}, img=${img}`)
 
-          const value: ListMember = new ListMember(id, name, mobile, img);
-          jsonData.push(value)
+          retData.push(new ListMember(id, name, mobile, img))
         }
         // 释放数据集的内存
         resultSet.close();
-        // console.info("JSON: " + JSON.stringify(jsonData))
       })
+    }else{
+      console.log("Failed to query data. The RdbStore isn't exist.")
     }
-    return jsonData
+
+    return retData
   }
 
 }
