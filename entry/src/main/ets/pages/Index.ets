@@ -13,7 +13,7 @@ struct Index {
   private listScroller: Scroller = new Scroller();
   @State selectedIndex: number = 0;
 
-  queryContactsListData(): Array<ListMember> {
+  queryContactsListData() {
     let predicates: rs.RdbPredicates = new rs.RdbPredicates("AddressTable");
 
     if(rdbStore){
@@ -42,16 +42,11 @@ struct Index {
     }else{
       console.log("Failed to query data. The RdbStore isn't exist.")
     }
-    return this.ListArray
-  }
-
-  aboutToAppear(): void {
 
   }
 
   onPageShow(): void {
-    this.ListCt.SetArr(this.queryContactsListData())
-    console.log(this.ListArray.toString())
+    this.queryContactsListData()
     this.ListCt.SetArr(this.ListArray)
   }
 
