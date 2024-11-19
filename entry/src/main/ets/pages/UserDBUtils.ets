@@ -1,8 +1,8 @@
 import rs from '@ohos.data.relationalStore'
-import { BusinessError, Callback } from '@kit.BasicServicesKit'
 import { ValuesBucket } from '@kit.ArkData'
-import { ListMember } from '../DataModel/DataInfo'
+import { ListMember, Contacts } from '../DataModel/DataInfo'
 import common from '@ohos.app.ability.common'
+import { pinyin } from "pinyin-pro";
 
 export default class rdb{
   private rdbStore: rs.RdbStore | undefined = undefined
@@ -101,10 +101,10 @@ export default class rdb{
     }
   }
 
-  RequestData(): Array<ListMember> {
+RequestData(): Array<Contacts> {
     // 配置谓词
     let predicates: rs.RdbPredicates = new rs.RdbPredicates("AddressTable");
-    let jsonData: Array<ListMember> = new Array<ListMember>();
+    let Data: Array<Contacts> = []
 
     if(this.rdbStore){
       this.rdbStore.query(predicates, ["id", 'name', 'mobile', 'img'], (err, resultSet) => {
@@ -124,15 +124,35 @@ export default class rdb{
           const img = resultSet.getString(resultSet.getColumnIndex("img"));
           console.info(`id=${id}, name=${name}, mobile=${mobile}, img=${img}`);
 
-          const value: ListMember = new ListMember(id, name, mobile, img);
-          jsonData.push(value)
+          //处理拼音
+          let pinyinStr = pinyin(name, { toneType: "none" }) as string
+          let index = pinyinStr.substring(0,1).toUpperCase();
+          if (!/^[A-Z]$/.test(index)) { // 如果不在A-Z中则默认为“#”
+            index = "#";
+          }
+          console.log(name +" index:"+index)
+          Data.push(new Contacts(index, new ListMember(id, name, mobile, img)));
         }
         // 释放数据集的内存
         resultSet.close();
-        // console.info("JSON: " + JSON.stringify(jsonData))
+
       })
     }
-    return jsonData
+
+    Data.sort((a:Contacts, b: Contacts) => {
+      if (a.index === b.index) {
+        return a.data.name.localeCompare(b.data.name) as number
+      }
+      if (a.index === "#") {
+        return 1
+      }
+      if (b.index === "#") {
+        return -1
+      }
+      return a.index.localeCompare(b.index)
+    })
+
+    return Data
   }
 
 }
