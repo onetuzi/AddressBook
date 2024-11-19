@@ -1,4 +1,3 @@
-import List from "@ohos.util.List"
 
 export class ListMember{
   id: number
@@ -13,7 +12,6 @@ export class ListMember{
     this.img = img
   }
 }
-
 
 class BasicDataSource implements IDataSource {
   private listeners: DataChangeListener[] = [];
@@ -74,12 +72,15 @@ class BasicDataSource implements IDataSource {
 }
 
 export class ListMemberDataSource extends BasicDataSource {
-  private dataArray: ListMember[] = [];
+  private dataArray: Array<ListMember> = [];
 
   public totalCount(): number {
     return this.dataArray.length;
   }
 
+  public getData(index: number): ListMember {
+    return this.dataArray[index];
+  }
 
   public addData(index: number, data: ListMember): void {
     this.dataArray.splice(index, 0, data);
@@ -97,18 +98,8 @@ export class ListMemberDataSource extends BasicDataSource {
     this.notifyDataReload()
   }
 
-  public SetArr(data: ListMember[]){
+  public async SetArr(data: Array<ListMember>): Promise<void>{
     this.dataArray = data
     this.notifyDataReload()
-    console.log("ok")
   }
-}
-
-export class Contacts {
-  constructor(index: string, data: ListMember) {
-    this.index = index
-    this.data = data
-  }
-  index: string // 序号
-  data: ListMember
 }

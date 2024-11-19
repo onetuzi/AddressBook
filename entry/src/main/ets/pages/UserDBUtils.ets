@@ -1,8 +1,8 @@
 import rs from '@ohos.data.relationalStore'
+import { BusinessError, Callback } from '@kit.BasicServicesKit'
 import { ValuesBucket } from '@kit.ArkData'
-import { ListMember, Contacts } from '../DataModel/DataInfo'
+import { ListMember } from '../DataModel/DataInfo'
 import common from '@ohos.app.ability.common'
-import { pinyin } from "pinyin-pro";
 
 export default class rdb{
   private rdbStore: rs.RdbStore | undefined = undefined
@@ -101,58 +101,40 @@ export default class rdb{
     }
   }
 
-RequestData(): ListMember[] {
+  RequestData(): Array<ListMember> {
     // 配置谓词
     let predicates: rs.RdbPredicates = new rs.RdbPredicates("AddressTable");
-    let Data: ListMember[] = []
+    let jsonData: Array<ListMember> = new Array<ListMember>();
 
     if(this.rdbStore){
-        this.rdbStore.query(predicates, ["id", 'name', 'mobile', 'img'], (err, resultSet) => {
-          if (err) {
-            console.error(`Failed to query data. Code:${err.code}, message:${err.message}`);
-            return;
-          }
-          console.info(`ResultSet column names: ${resultSet.columnNames}, row count: ${resultSet.rowCount}`);
-          if(resultSet.rowCount == -1){
-            console.info("rowCount = -1")
-          }
+      this.rdbStore.query(predicates, ["id", 'name', 'mobile', 'img'], (err, resultSet) => {
+        if (err) {
+          console.error(`Failed to query data. Code:${err.code}, message:${err.message}`);
+          return;
+        }
+        console.info(`ResultSet column names: ${resultSet.columnNames}, row count: ${resultSet.rowCount}`);
+        if(resultSet.rowCount == -1){
+          console.info("rowCount = -1")
+        }
 
-          while (resultSet.goToNextRow()) {
-            const id = resultSet.getLong(resultSet.getColumnIndex("ID"));
-            const name = resultSet.getString(resultSet.getColumnIndex("name"));
-            const mobile = resultSet.getString(resultSet.getColumnIndex("mobile"));
-            const img = resultSet.getString(resultSet.getColumnIndex("img"));
-            console.info(`id=${id}, name=${name}, mobile=${mobile}, img=${img}`);
+        while (resultSet.goToNextRow()) {
+          const id = resultSet.getLong(resultSet.getColumnIndex("ID"));
+          const name = resultSet.getString(resultSet.getColumnIndex("name"));
+          const mobile = resultSet.getString(resultSet.getColumnIndex("mobile"));
+          const img = resultSet.getString(resultSet.getColumnIndex("img"));
+          console.info(`id=${id}, name=${name}, mobile=${mobile}, img=${img}`);
 
-            // //处理拼音
-            // let pinyinStr=pinyin(name, { toneType: "none" });
-            // let index=pinyinStr.substring(0,1).toUpperCase();
-            // if (!/^[A-Z]$/.test(index)) { // 如果不在A-Z中则默认为“#”
-            //   index = "#";
-            // }
-            // console.log(name +" index:"+index)
-            con
-            Data.push(new ListMember(id, name, mobile, img));
-          }
-          // 释放数据集的内存
-          resultSet.close();
-        })
+          const value: ListMember = new ListMember(id, name, mobile, img);
+          jsonData.push(value)
+        }
+        // 释放数据集的内存
+        resultSet.close();
+        // console.info("JSON: " + JSON.stringify(jsonData))
+      })
     }
-
-    // Data.sort((a:Contacts, b: Contacts) => {
-    //   if (a.index === b.index) {
-    //     return a.data.name.localeCompare(b.data.name) as number
-    //   }
-    //   if (a.index === "#") {
-    //     return 1
-    //   }
-    //   if (b.index === "#") {
-    //     return -1
-    //   }
-    //   return a.index.localeCompare(b.index)
-    // })
-
-    return Data
+    return jsonData
   }
 
 }
+
+export let dbControllor: rdb = new rdb()

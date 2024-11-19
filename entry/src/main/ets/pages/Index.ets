@@ -1,5 +1,5 @@
 import { BusinessError, Callback } from '@kit.BasicServicesKit'
-import { Contacts, ListMember, ListMemberDataSource } from "../DataModel/DataInfo"
+import { ListMember, ListMemberDataSource } from "../DataModel/DataInfo"
 import { router } from '@kit.ArkUI'
 import rs from '@ohos.data.relationalStore'
 import rdb from './UserDBUtils'
@@ -9,14 +9,15 @@ const colors: Array<string> = ['#ff6161', '#ffb120', '#7484fc', '#00cee5']
 struct Index {
   @State ListCt: ListMemberDataSource = new ListMemberDataSource()
   @State letters: string[] = ['※', 'A','B','C','D','E','F','H','I','G','K','L','M','N', 'O','P','Q','R','S','T','U','V','W','X','Y','Z','#']
+  @State ListArray: Array<ListMember> = []
   private listScroller: Scroller = new Scroller();
   @State selectedIndex: number = 0;
 
-onPageShow(){
+  onPageShow(): void {
     setTimeout(() => {
-      console.error('--------------', `aboutToAppear 2000 `)
+      console.error('--------------', `aboutToAppear 2000 `);
       this.ListCt.SetArr(rdb.getInstance().RequestData())
-    }, 2000)
+    }, 800)
   }
 
   build() {
@@ -26,44 +27,35 @@ onPageShow(){
         Stack({ alignContent: Alignment.End }) {
           Column() {
             List({ scroller: this.listScroller }) {
-              LazyForEach(this.ListCt, (item: Contacts, index: number) => {
+              LazyForEach(this.ListCt,(item: ListMember, index: number) => {
                 ListItem() {
-
-                    Column() {
-
-                      // if (index == 0 || item.index != item.index){
-                      //   Text(item.index).width('100%').fontColor('#333333').fontSize(14).backgroundColor("#EAEAEA").padding({
-                      //     top:5,bottom:5,left:15
-                      //   })
-                      // }
-
-                      Row({ space: 10 }) {
-                        Column() {
-                          Text(item.data.name.substring(0, 1))
-                            .width(44)
-                            .height(44)
-                            .borderRadius(22)
-                            .fontColor('#ffffff')
-                            .backgroundColor(colors[Math.floor(Math.random() * colors.length)])
-                            .textAlign(TextAlign.Center)
-                            .fontSize(20)
-                            .fontWeight(600)
-                        }
-                        .padding({ left: 10 })
-
-                        Column() {
-                          Text(item.data.name)
-                          Text(item.data.mobile).fontColor('#999999').fontSize(14).margin({ top: 6 })
-
-                        }
-                        .alignItems(HorizontalAlign.Start)
+                  Column() {
+                    Row({ space: 10 }) {
+                      Column() {
+                        Text(item.name.substring(0, 1))
+                          .width(44)
+                          .height(44)
+                          .borderRadius(22)
+                          .fontColor('#ffffff')
+                          .backgroundColor(colors[Math.floor(Math.random() * colors.length)])
+                          .textAlign(TextAlign.Center)
+                          .fontSize(20)
+                          .fontWeight(600)
                       }
-                      .width('100%')
+                      .padding({ left: 10 })
 
-                      Blank().backgroundColor('#f5f5f5').height(1).margin(10)
+                      Column() {
+                        Text(item.name)
+                        Text(item.mobile).fontColor('#999999').fontSize(14).margin({ top: 6 })
+
+                      }
+                      .alignItems(HorizontalAlign.Start)
                     }
-                  }
+                    .width('100%')
 
+                    Blank().backgroundColor('#f5f5f5').height(1).margin(10)
+                  }
+                }
               })
             }
 
