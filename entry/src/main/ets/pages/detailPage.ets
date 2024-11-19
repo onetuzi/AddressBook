@@ -60,7 +60,7 @@ struct CreateContactsPage {
           .padding({top: 20})
 
         Text(this.input_mobile)
-          .fontSize(30)
+          .fontSize(20)
 
         Button('编辑联系人')
           .width('100%')

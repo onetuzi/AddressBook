@@ -13,6 +13,7 @@ struct Index {
   @State ListArray: Array<ListMember> = []
   private listScroller: Scroller = new Scroller()
   @State selectedIndex: number = 0
+  @State Search_Content: string = ""
   private openBarData: Contacts | undefined = undefined
   private downX = 0
   private barWidth = 100
@@ -109,6 +110,22 @@ struct Index {
         Stack({ alignContent: Alignment.End }) {
           Column() {
             List({ scroller: this.listScroller }) {
+              ListItem(){
+                Search({placeholder: "请输入搜索内容"})
+                  .padding({left:5, right:5})
+                  .onChange((result) => {
+                    this.Search_Content = result
+                  })
+                  .onSubmit(() => {
+                      rdb.getInstance().queryData(this.Search_Content).then((result) => {
+                        for(let i = 0; i < this.ListCt.totalCount(); i++){
+                          if(this.ListCt.getData(i).data.id == result){
+                            this.listScroller.scrollToIndex(i)
+                          }
+                        }
+                      })
+                  })
+              }
               LazyForEach(this.ListCt,(item: Contacts, index: number) => {
                 ListItem() {
                   Column(){
@@ -121,7 +138,7 @@ struct Index {
                         .padding({ top: 10, bottom: 10, left: 15 })
                     }
 
-                  Scroll() {
+                  Scroll(item.Scroller) {
                     Row() {
                       Column() {
                         Row({ space: 10 }) {
@@ -202,7 +219,7 @@ struct Index {
                         this.downX = event.touches[0].x
                         break
                       case TouchType.Up: // 触摸抬起
-                        // 触摸抬起，根据x轴总偏移量，判断是否打开删除
+                        // 触摸抬起，根据x轴总偏移量，判断是否打开
                         let xOffset = event.touches[0].x - this.downX
                         // 防止消费点击事件
                         if (xOffset == 0) {
@@ -213,7 +230,7 @@ struct Index {
                         // 开启删除的对象置为null
                         this.openBarData = undefined;
                         // 偏移量超过删除按钮一半且左滑，设置打开
-                        if (Math.abs(xOffset) > vp2px(this.barWidth) / 2 && xOffset < 0) {
+                        if (Math.abs(xOffset) > vp2px(this.barWidth) / 4 && xOffset < 0) {
                           // 删除布局宽度
                           toxOffset = vp2px(this.barWidth)
                           this.openBarData = item
@@ -227,7 +244,7 @@ struct Index {
                         this.downX = 0
                         break
                     }
-                    })
+                     })
                     Blank()
                       .backgroundColor('#f5f5f5')
                       .height(index + 1 < this.ListCt.totalCount() &&

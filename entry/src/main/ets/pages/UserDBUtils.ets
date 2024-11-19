@@ -100,6 +100,41 @@ export default class rdb{
     }
   }
 
+  async queryData(val: string): Promise<number>{
+    // 配置谓词
+    let predicates: rs.RdbPredicates = new rs.RdbPredicates("AddressTable");
+    predicates.contains("name", val)
+    predicates.or()
+    predicates.contains("mobile", val)
+    let Data: number = 0
+    if (this.rdbStore) {
+      // 将异步操作包装在 Promise 中
+      Data = await new Promise<number>((resolve, reject) => {
+        (this.rdbStore as rs.RdbStore).query(predicates, ["id", "name", "mobile", "img"], (err, resultSet) => {
+          if (err) {
+            console.error(`Failed to query data. Code:${err.code}, message:${err.message}`);
+            reject(err); // 处理错误
+            return;
+          }
+          console.info(`ResultSet column names: ${resultSet.columnNames}, row count: ${resultSet.rowCount}`);
+          if (resultSet.rowCount == -1) {
+            console.info("rowCount = -1");
+          }
+
+          while (resultSet.goToNextRow()) {
+            Data = resultSet.getLong(resultSet.getColumnIndex("ID"))
+            break
+          }
+          // 释放数据集的内存
+          resultSet.close();
+          resolve(Data); // 返回数据
+        });
+      });
+    }
+
+    return Data;
+  }
+
   async RequestData(): Promise<Array<ListMember>> {
     // 配置谓词
     let predicates: rs.RdbPredicates = new rs.RdbPredicates("AddressTable");
