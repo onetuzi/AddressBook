@@ -101,38 +101,44 @@ export default class rdb{
     }
   }
 
-  RequestData(): Array<ListMember> {
+  async RequestData(): Promise<Array<ListMember>> {
     // 配置谓词
     let predicates: rs.RdbPredicates = new rs.RdbPredicates("AddressTable");
-    let jsonData: Array<ListMember> = new Array<ListMember>();
+    let Data: Array<ListMember> = new Array<ListMember>();
 
-    if(this.rdbStore){
-      this.rdbStore.query(predicates, ["id", 'name', 'mobile', 'img'], (err, resultSet) => {
-        if (err) {
-          console.error(`Failed to query data. Code:${err.code}, message:${err.message}`);
-          return;
-        }
-        console.info(`ResultSet column names: ${resultSet.columnNames}, row count: ${resultSet.rowCount}`);
-        if(resultSet.rowCount == -1){
-          console.info("rowCount = -1")
-        }
+    if (this.rdbStore) {
+      // 将异步操作包装在 Promise 中
+      Data = await new Promise<Array<ListMember>>((resolve, reject) => {
+        (this.rdbStore as rs.RdbStore).query(predicates, ["id", "name", "mobile", "img"], (err, resultSet) => {
+          if (err) {
+            console.error(`Failed to query data. Code:${err.code}, message:${err.message}`);
+            reject(err); // 处理错误
+            return;
+          }
+          console.info(`ResultSet column names: ${resultSet.columnNames}, row count: ${resultSet.rowCount}`);
+          if (resultSet.rowCount == -1) {
+            console.info("rowCount = -1");
+          }
 
-        while (resultSet.goToNextRow()) {
-          const id = resultSet.getLong(resultSet.getColumnIndex("ID"));
-          const name = resultSet.getString(resultSet.getColumnIndex("name"));
-          const mobile = resultSet.getString(resultSet.getColumnIndex("mobile"));
-          const img = resultSet.getString(resultSet.getColumnIndex("img"));
-          console.info(`id=${id}, name=${name}, mobile=${mobile}, img=${img}`);
+          while (resultSet.goToNextRow()) {
+            const id = resultSet.getLong(resultSet.getColumnIndex("ID"));
+            const name = resultSet.getString(resultSet.getColumnIndex("name"));
+            const mobile = resultSet.getString(resultSet.getColumnIndex("mobile"));
+            const img = resultSet.getString(resultSet.getColumnIndex("img"));
+            console.info(`id=${id}, name=${name}, mobile=${mobile}, img=${img}`);
 
-          const value: ListMember = new ListMember(id, name, mobile, img);
-          jsonData.push(value)
-        }
-        // 释放数据集的内存
-        resultSet.close();
-        // console.info("JSON: " + JSON.stringify(jsonData))
-      })
+            const value: ListMember = new ListMember(id, name, mobile, img);
+            Data.push(value);
+          }
+          // 释放数据集的内存
+          resultSet.close();
+          console.info("JSON: " + JSON.stringify(Data));
+          resolve(Data); // 返回数据
+        });
+      });
     }
-    return jsonData
+
+    return Data;
   }
 
 }

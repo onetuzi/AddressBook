@@ -63,7 +63,7 @@ struct CreateContactsPage {
                 promptAction.showToast({
                   message: '创建成功'
                 })
-                router.back({
+                router.replaceUrl({
                   url: 'pages/Index',
                   params: {
                     result_code: 200

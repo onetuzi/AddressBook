@@ -1,5 +1,5 @@
 import { BusinessError, Callback } from '@kit.BasicServicesKit'
-import { ListMember, ListMemberDataSource } from "../DataModel/DataInfo"
+import { ListMember, ListMemberDataSource, Contacts } from "../DataModel/DataInfo"
 import { router } from '@kit.ArkUI'
 import rs from '@ohos.data.relationalStore'
 import rdb from './UserDBUtils'
@@ -8,16 +8,18 @@ const colors: Array<string> = ['#ff6161', '#ffb120', '#7484fc', '#00cee5']
 @Component
 struct Index {
   @State ListCt: ListMemberDataSource = new ListMemberDataSource()
-  @State letters: string[] = ['※', 'A','B','C','D','E','F','H','I','G','K','L','M','N', 'O','P','Q','R','S','T','U','V','W','X','Y','Z','#']
+  @State letters: string[] = ['A','B','C','D','E','F','H','I','G','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','#']
+  @State flag: number = 0
   @State ListArray: Array<ListMember> = []
-  private listScroller: Scroller = new Scroller();
-  @State selectedIndex: number = 0;
-
+  private listScroller: Scroller = new Scroller()
+  @State selectedIndex: number = 0
   onPageShow(): void {
     setTimeout(() => {
       console.error('--------------', `aboutToAppear 2000 `);
-      this.ListCt.SetArr(rdb.getInstance().RequestData())
-    }, 800)
+      rdb.getInstance().RequestData().then((result) => {
+        this.ListCt.SetArr(result)
+      })
+    }, 100)
   }
 
   build() {
@@ -27,35 +29,58 @@ struct Index {
         Stack({ alignContent: Alignment.End }) {
           Column() {
             List({ scroller: this.listScroller }) {
-              LazyForEach(this.ListCt,(item: ListMember, index: number) => {
-                ListItem() {
-                  Column() {
-                    Row({ space: 10 }) {
-                      Column() {
-                        Text(item.name.substring(0, 1))
-                          .width(44)
-                          .height(44)
-                          .borderRadius(22)
-                          .fontColor('#ffffff')
-                          .backgroundColor(colors[Math.floor(Math.random() * colors.length)])
-                          .textAlign(TextAlign.Center)
-                          .fontSize(20)
-                          .fontWeight(600)
-                      }
-                      .padding({ left: 10 })
+              LazyForEach(this.ListCt,(item: Contacts, index: number) => {
+                  ListItem() {
+                    Scroll() {
+                      Row() {
+                        Column() {
+                          if (index == 0 || item.index != this.ListCt.getData(index - 1).index) {
+                            Text(item.index)
+                              .width('100%')
+                              .fontColor('#333333')
+                              .fontSize(14)
+                              .backgroundColor("#EAEAEA")
+                              .padding({ top: 10, bottom: 10, left: 15 })
+                          }
 
-                      Column() {
-                        Text(item.name)
-                        Text(item.mobile).fontColor('#999999').fontSize(14).margin({ top: 6 })
+                          Row({ space: 10 }) {
+                            Column() {
+                              Text(item.data.name.substring(0, 1))
+                                .width(44)
+                                .height(44)
+                                .borderRadius(22)
+                                .fontColor('#ffffff')
+                                .backgroundColor(colors[Math.floor(Math.random() * colors.length)])
+                                .textAlign(TextAlign.Center)
+                                .fontSize(20)
+                                .fontWeight(600)
+                            }
+                            .padding({ left: 10 })
 
+                            Column() {
+                              Text(item.data.name)
+                              Text(item.data.mobile).fontColor('#999999').fontSize(14).margin({ top: 6 })
+
+                            }
+                            .alignItems(HorizontalAlign.Start)
+                          }
+                          .padding({ top: 10 })
+                          .width('100%')
+
+                          Blank()
+                            .backgroundColor('#f5f5f5')
+                            .height(index + 1 < this.ListCt.totalCount() &&
+                              item.index == this.ListCt.getData(index + 1).index ? 1 : 0)
+                            .margin(5)
+                        }
+                        Button() {
+                          Text('删除')
+                        }
+                        .width(100).height(65)
                       }
-                      .alignItems(HorizontalAlign.Start)
+                      .width("100%")
                     }
-                    .width('100%')
-
-                    Blank().backgroundColor('#f5f5f5').height(1).margin(10)
                   }
-                }
               })
             }
 
@@ -76,6 +101,12 @@ struct Index {
             .onSelect((index: number) => {
               console.info(this.letters[index] + ' Selected!', index)
               this.listScroller.scrollToIndex(index)
+              for (let i = 0 ; i < this.ListCt.totalCount(); i++){
+                if (Number(this.ListCt.getData(i).index) == index){
+                  this.listScroller.scrollToIndex(i)//滚动到索引位置
+                  break ;
+                }
+              }
             })
             .onPopupSelect((index: number) => {
               console.info('onPopupSelected:' + index)
@@ -92,7 +123,7 @@ struct Index {
             })
             .margin({ right: 30, bottom: 60 })
             .onClick(() => {
-              router.pushUrl({
+              router.replaceUrl({
                 url: "pages/CreatePage"
               })
                 .catch((err: BusinessError) => {
