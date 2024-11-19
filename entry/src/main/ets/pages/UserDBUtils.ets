@@ -1,5 +1,4 @@
 import rs from '@ohos.data.relationalStore'
-import { BusinessError, Callback } from '@kit.BasicServicesKit'
 import { ValuesBucket } from '@kit.ArkData'
 import { ListMember } from '../DataModel/DataInfo'
 import common from '@ohos.app.ability.common'
@@ -67,7 +66,7 @@ export default class rdb{
     }
   }
 
-  DeleteData(DelID: number) {
+  async DeleteData(DelID: number) {
     let predicates: rs.RdbPredicates = new rs.RdbPredicates("AddressTable");
     predicates.equalTo("id", DelID);
     if(this.rdbStore != undefined) {

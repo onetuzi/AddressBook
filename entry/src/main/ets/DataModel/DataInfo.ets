@@ -88,6 +88,10 @@ export class ListMemberDataSource extends BasicDataSource {
     this.notifyDataAdd(index);
   }
 
+  public deleteDate(index: number){
+    this.notifyDataDelete(index)
+  }
+
   public pushData(data: Contacts): void {
     this.dataArray.push(data);
     this.notifyDataAdd(this.dataArray.length - 1);
@@ -139,4 +143,5 @@ export class Contacts {
   }
   index: string // 序号
   data: ListMember
+  Scroller: Scroller = new Scroller()
 }
