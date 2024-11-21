@@ -14,6 +14,7 @@ struct CreateContactsPage {
   @State input_name: string = ""
   @State input_mobile: string = ""
   @State now_id: number = 0
+  @State now_img: string = ""
   aboutToAppear(): void {
     this.get_params = router.getParams()
     const name: string = this.get_params['name'];
@@ -22,6 +23,8 @@ struct CreateContactsPage {
     this.input_mobile = mobile
     const id: number = this.get_params['id'];
     this.now_id = id
+    const img: string = this.get_params['img'];
+    this.now_img = img
     console.log(`det.Received parameters: id = ${name}, age = ${mobile}`);
   }
 
@@ -45,15 +48,23 @@ struct CreateContactsPage {
 
 
       Column() {
-        Text(this.input_name.substring(0, 1))
-          .width(100)
-          .height(100)
-          .borderRadius(11111)
-          .fontColor('#ffffff')
-          .backgroundColor(colors[Math.floor(Math.random() * colors.length)])
-          .textAlign(TextAlign.Center)
-          .fontSize(50)
-          .fontWeight(600)
+        if(this.now_img != ""){
+          Image(this.now_img)
+            .width(100)
+            .height(100)
+            .borderRadius(11111)
+        }else{
+          Text(this.input_name.substring(0, 1))
+            .width(100)
+            .height(100)
+            .borderRadius(11111)
+            .fontColor('#ffffff')
+            .backgroundColor(colors[Math.floor(Math.random() * colors.length)])
+            .textAlign(TextAlign.Center)
+            .fontSize(50)
+            .fontWeight(600)
+        }
+
 
         Text(this.input_name)
           .fontSize(30)
@@ -72,7 +83,8 @@ struct CreateContactsPage {
               params: {
                 name: this.input_name,
                 mobile: this.input_mobile,
-                id: this.now_id
+                id: this.now_id,
+                img: this.now_img
               }
             })
           })

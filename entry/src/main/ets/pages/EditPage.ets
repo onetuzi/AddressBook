@@ -1,5 +1,7 @@
 import { promptAction, router } from '@kit.ArkUI';
 import rdb from "../pages/UserDBUtils";
+import picker from '@ohos.file.photoAccessHelper'
+import { BusinessError } from '@kit.BasicServicesKit';
 
 const colors: Array<string> = ['#ff6161', '#ffb120', '#7484fc', '#00cee5']
 
@@ -7,14 +9,18 @@ function getRandomColor():string {
   const randomIndex = Math.floor(Math.random() * colors.length);
   return colors[randomIndex];
 }
+const photoViewPicker = new picker.PhotoViewPicker
+const photoSelectOptions = new picker.PhotoSelectOptions()
 
 @Entry
 @Component
 struct CreateContactsPage {
+  @State uri: string[] = [];
   @State get_params: object | undefined = undefined
   @State input_name: string = ""
   @State input_mobile: string = ""
   @State now_id: number = 0
+  @State now_img: string = ""
   aboutToAppear(): void {
     this.get_params = router.getParams()
     const name: string = this.get_params['name'];
@@ -23,6 +29,8 @@ struct CreateContactsPage {
     this.input_mobile = mobile
     const id: number = this.get_params['id'];
     this.now_id = id
+    const img: string = this.get_params['img'];
+    this.now_img = img
     console.log(`Received parameters: id = ${name}, age = ${mobile}`);
   }
 
@@ -45,7 +53,51 @@ struct CreateContactsPage {
       })
 
 
-      Column() {
+      Column({space: 10}) {
+        if(this.now_img != ""){
+          Image(this.now_img)
+            .width(100)
+            .height(100)
+            .borderRadius(11111)
+            .onClick(() => {
+              photoSelectOptions.MIMEType = picker.PhotoViewMIMETypes.IMAGE_TYPE;
+              photoSelectOptions.maxSelectNumber = 1;
+              photoViewPicker.select(photoSelectOptions)
+                .then((photoSelectResult) => {
+                  this.uri = photoSelectResult.photoUris; // select返回的uri权限是只读权限，需要将uri写入全局变量@State中即可根据结果集中的uri进行读取文件数据操作。
+                  this.now_img = this.uri[0]
+                })
+                .catch((err: BusinessError) => {
+                  console.info('Invoke photoViewPicker.select failed, code is ${err.code},message is ${err.message}');
+                })
+            })
+        }else{
+          Text(this.input_name.substring(0, 1))
+            .width(100)
+            .height(100)
+            .borderRadius(11111)
+            .fontColor('#ffffff')
+            .backgroundColor(colors[Math.floor(Math.random() * colors.length)])
+            .textAlign(TextAlign.Center)
+            .fontSize(50)
+            .fontWeight(600)
+            .onClick(() => {
+              photoSelectOptions.MIMEType = picker.PhotoViewMIMETypes.IMAGE_TYPE;
+              photoSelectOptions.maxSelectNumber = 1;
+              photoViewPicker.select(photoSelectOptions)
+                .then((photoSelectResult) => {
+                  this.uri = photoSelectResult.photoUris; // select返回的uri权限是只读权限，需要将uri写入全局变量@State中即可根据结果集中的uri进行读取文件数据操作。
+                  this.now_img = this.uri[0]
+                })
+                .catch((err: BusinessError) => {
+                  console.info('Invoke photoViewPicker.select failed, code is ${err.code},message is ${err.message}');
+                })
+            })
+        }
+
+
+        Blank()
+
         TextInput({ placeholder: this.input_name})
           .copyOption(CopyOptions.LocalDevice)
           .onChange((value) => {
@@ -73,7 +125,7 @@ struct CreateContactsPage {
             }
 
             if (rdb.getInstance()!== undefined) {
-              rdb.getInstance().UpdateData(this.input_name, this.input_mobile, "", this.now_id)
+              rdb.getInstance().UpdateData(this.input_name, this.input_mobile, this.uri[0]? this.uri[0]: "", this.now_id)
                 promptAction.showToast({
                   message: '修改成功'
                 })
@@ -113,7 +165,7 @@ struct CreateContactsPage {
 
           })
 
-      }.alignItems(HorizontalAlign.Start)
+      }.alignItems(HorizontalAlign.Center)
       .width('100%')
       .padding(20)
       .margin({ top: 50 })
